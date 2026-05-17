@@ -9,9 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-/* ═══════════════════════════════════════════════════
-   DESIGN TOKENS
-═══════════════════════════════════════════════════ */
 :root {
   --teal-dark:#00695C;--teal:#26A69A;--teal-light:#4DB6AC;--teal-pale:#E0F2F1;
   --lime:#AED581;--amber:#FFCA28;--orange:#FF8A65;--red:#EF5350;
@@ -156,7 +153,7 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
 .badge-info{background:#E3F2FD;color:#1565C0}
 .badge-gray{background:#ECEFF1;color:#546E7A}
 
-/* CAMERA — กล้องถ่ายรูปจริง */
+/* CAMERA */
 .camera-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);
   z-index:5000;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 .camera-modal.open{display:flex}
@@ -229,7 +226,7 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
 .progress{background:var(--gray-100);border-radius:20px;height:8px;overflow:hidden}
 .progress-bar{height:100%;border-radius:20px;transition:width .5s}
 
-/* BOTTOM NAV (mobile) */
+/* BOTTOM NAV */
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;
   background:linear-gradient(135deg,#00695C,#26A69A);z-index:150;
   padding:6px 0 env(safe-area-inset-bottom,6px);box-shadow:0 -4px 20px rgba(0,0,0,.15)}
@@ -272,22 +269,9 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
   main{padding:12px 10px 80px}
 }
 
-/* CHECK-IN PAGE — responsive grid */
-.checkin-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-.checkin-right {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-@media (max-width: 768px) {
-  .checkin-grid {
-    grid-template-columns: 1fr;
-  }
-}
+.checkin-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.checkin-right{display:flex;flex-direction:column;gap:20px}
+@media(max-width:768px){.checkin-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -299,7 +283,7 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
 </div>
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- CAMERA MODAL — กล้องถ่ายรูปจริง -->
+<!-- CAMERA MODAL -->
 <div class="camera-modal" id="cameraModal">
   <div style="color:#fff;font-family:'Kanit',sans-serif;font-size:16px;display:flex;align-items:center;gap:8px">
     <i class="fas fa-camera"></i> ถ่ายรูปหลักฐาน
@@ -308,17 +292,38 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
   <video id="camVideo" autoplay muted playsinline></video>
   <canvas id="camCanvas"></canvas>
   <div class="camera-toolbar">
-    <button class="camera-switch-btn" onclick="switchCamera()" title="สลับกล้อง">
-      <i class="fas fa-sync-alt"></i>
-    </button>
-    <button class="shutter-btn" onclick="captureFromCamera()" title="ถ่ายรูป">
-      <i class="fas fa-circle"></i>
-    </button>
-    <button class="camera-switch-btn" onclick="closeCameraModal()" title="ยกเลิก">
-      <i class="fas fa-times"></i>
-    </button>
+    <button class="camera-switch-btn" onclick="switchCamera()" title="สลับกล้อง"><i class="fas fa-sync-alt"></i></button>
+    <button class="shutter-btn" onclick="captureFromCamera()" title="ถ่ายรูป"><i class="fas fa-circle"></i></button>
+    <button class="camera-switch-btn" onclick="closeCameraModal()" title="ยกเลิก"><i class="fas fa-times"></i></button>
   </div>
   <div style="font-size:12px;color:rgba(255,255,255,.5)">กดวงกลมเพื่อถ่ายรูป · กด ✕ เพื่อยกเลิก</div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div id="adminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+  z-index:6000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:20px;padding:32px;width:90%;max-width:380px;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center">
+    <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-dark));
+      display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;color:#fff">
+      <i class="fas fa-lock"></i>
+    </div>
+    <h3 style="font-family:'Kanit',sans-serif;font-size:18px;margin-bottom:6px">ยืนยันตัวตน Admin</h3>
+    <p style="font-size:13px;color:var(--gray-600);margin-bottom:20px">กรุณาใส่รหัสผ่านเพื่อเข้าถึงการตั้งค่า</p>
+    <input type="password" id="adminPwdInput" class="form-control"
+      placeholder="รหัสผ่าน Admin"
+      style="text-align:center;font-size:18px;letter-spacing:4px;margin-bottom:16px"
+      onkeydown="if(event.key==='Enter')verifyAdminPwd()">
+    <div id="adminPwdError" style="color:#E53935;font-size:13px;margin-bottom:12px;display:none">
+      <i class="fas fa-times-circle"></i> รหัสผ่านไม่ถูกต้อง
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" style="flex:1" onclick="closeAdminModal()">ยกเลิก</button>
+      <button class="btn btn-primary" style="flex:1" id="adminSubmitBtn" onclick="verifyAdminPwd()">
+        <i class="fas fa-unlock"></i> เข้าสู่ระบบ
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- HAMBURGER + OVERLAY -->
@@ -329,7 +334,7 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <div class="logo-wrap">
-      <img id="logoImg" src="" alt="โลโก้"
+      <img id="logoImg" src="" alt="โลโก้" style="display:none"
            onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'">
       <div class="logo-fallback" id="logoFallback" style="display:flex"><i class="fas fa-chalkboard-teacher"></i></div>
     </div>
@@ -474,8 +479,6 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
             <option>อาคาร 2</option><option>โรงอาหาร</option><option>ห้องพักครู</option><option>อื่นๆ</option>
           </select>
         </div>
-
-        <!-- รูปหลักฐาน — กล้องถ่ายรูปจริง -->
         <div class="form-group">
           <label class="form-label"><i class="fas fa-camera"></i> รูปหลักฐาน</label>
           <div class="photo-preview-box" id="photoBox" onclick="openCameraModal()">
@@ -487,19 +490,12 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
             </div>
           </div>
           <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
-            <button type="button" class="btn btn-sm btn-primary" onclick="openCameraModal()">
-              <i class="fas fa-camera"></i> เปิดกล้อง
-            </button>
-            <button type="button" class="btn btn-sm btn-outline" onclick="document.getElementById('photoFileInput').click()">
-              <i class="fas fa-upload"></i> เลือกรูป
-            </button>
-            <button type="button" class="btn btn-sm" style="background:#eee;color:#666" onclick="clearPhoto()">
-              <i class="fas fa-trash"></i> ล้าง
-            </button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="openCameraModal()"><i class="fas fa-camera"></i> เปิดกล้อง</button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="document.getElementById('photoFileInput').click()"><i class="fas fa-upload"></i> เลือกรูป</button>
+            <button type="button" class="btn btn-sm" style="background:#eee;color:#666" onclick="clearPhoto()"><i class="fas fa-trash"></i> ล้าง</button>
           </div>
           <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
         </div>
-
         <div class="form-group"><label class="form-label"><i class="fas fa-sticky-note"></i> หมายเหตุ</label>
           <textarea class="form-control" id="ciNotes" rows="2" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></textarea>
         </div>
@@ -773,7 +769,8 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
     <div class="glass-header"><div class="glass-title"><div class="icon-box g1"><i class="fas fa-image"></i></div> โลโก้โรงเรียน</div></div>
     <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
       <div class="logo-wrap" style="width:80px;height:80px;border-radius:16px;border:2px solid var(--teal-light)">
-        <img id="logoPreviewSettings" src="" alt="โลโก้" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
+        <img id="logoPreviewSettings" src="" alt="โลโก้" style="width:100%;height:100%;object-fit:cover;border-radius:14px;display:none">
+        <div style="font-size:28px;color:var(--teal)"><i class="fas fa-school"></i></div>
       </div>
       <div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -808,47 +805,64 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
   <div style="margin-top:0"><button class="btn btn-primary btn-lg" onclick="saveSettings()"><i class="fas fa-save"></i> บันทึกการตั้งค่า</button></div>
 </div>
 
-
-      <!-- ADMIN PASSWORD MODAL -->
-      <div id="adminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
-        z-index:6000;align-items:center;justify-content:center">
-        <div style="background:#fff;border-radius:20px;padding:32px;width:90%;max-width:380px;
-          box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center">
-          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-dark));
-            display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;color:#fff">
-            <i class="fas fa-lock"></i>
-          </div>
-          <h3 style="font-family:'Kanit',sans-serif;font-size:18px;margin-bottom:6px">ยืนยันตัวตน Admin</h3>
-          <p style="font-size:13px;color:var(--gray-600);margin-bottom:20px">กรุณาใส่รหัสผ่านเพื่อเข้าถึงการตั้งค่า</p>
-          <input type="password" id="adminPwdInput" class="form-control"
-            placeholder="รหัสผ่าน Admin"
-            style="text-align:center;font-size:18px;letter-spacing:4px;margin-bottom:16px"
-            onkeydown="if(event.key==='Enter')verifyAdminPwd()">
-          <div id="adminPwdError" style="color:#E53935;font-size:13px;margin-bottom:12px;display:none">
-            <i class="fas fa-times-circle"></i> รหัสผ่านไม่ถูกต้อง
-          </div>
-          <div style="display:flex;gap:10px">
-            <button class="btn btn-outline" style="flex:1" onclick="closeAdminModal()">ยกเลิก</button>
-            <button class="btn btn-primary" style="flex:1" onclick="verifyAdminPwd()">
-              <i class="fas fa-unlock"></i> เข้าสู่ระบบ
-            </button>
-          </div>
-        </div>
-      </div>
 </main>
 
 <script>
 /* ═══════════════════════════════════════════════════════════
-   CONFIG — แก้ SCRIPT_URL ตรงนี้ หรือตั้งค่าผ่านหน้า Settings
+   CONFIG — แก้ GAS_URL ตรงนี้จุดเดียว
 ═══════════════════════════════════════════════════════════ */
-// SCRIPT_URL จะถูก fetch จาก GAS อัตโนมัติ ไม่ต้องกรอก
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyM5HST3XIp8NFfgRTHE5oeUvpWHIgdbqvBnfEKEyOSCUMFF4cBJtV4sbztk3IQhVkzrw/exec'; // ← hardcode เฉพาะตรงนี้จุดเดียว
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyp7cPVnthTH1IUdmUsHPElZMOhjWzrg3411WZ2MqDaCTMleFSVOHoCdBuACrg4djhZQw/exec';
 let SCRIPT_URL = GAS_URL;
 
 /* ═══════════════════════════════════════════════════════════
-   API HELPER — fetch() ไปยัง Google Apps Script doGet
-   ใช้ GET + query string เพื่อหลีก CORS preflight
-   สำหรับ payload ใหญ่ (รูปภาพ) → ใช้ POST แบบ no-cors
+   ADMIN AUTH — ประกาศครั้งเดียว ไม่ซ้ำ
+═══════════════════════════════════════════════════════════ */
+let adminToken = sessionStorage.getItem('adminToken') || '';
+let _adminCallback = null;
+
+function requireAdmin(callback) {
+  if (adminToken) { callback(); return; }
+  _adminCallback = callback;
+  document.getElementById('adminModal').style.display = 'flex';
+  document.getElementById('adminPwdInput').value = '';
+  document.getElementById('adminPwdError').style.display = 'none';
+  setTimeout(() => document.getElementById('adminPwdInput').focus(), 100);
+}
+
+function closeAdminModal() {
+  document.getElementById('adminModal').style.display = 'none';
+  _adminCallback = null;
+}
+
+async function verifyAdminPwd() {
+  const pwd = document.getElementById('adminPwdInput').value.trim();
+  if (!pwd) return;
+  const btn = document.getElementById('adminSubmitBtn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
+  btn.disabled = true;
+
+  // ส่ง password ใน data object เพื่อให้ GAS รับผ่าน params.data
+  const res = await api({ action: 'verifyAdmin', password: pwd });
+
+  btn.innerHTML = '<i class="fas fa-unlock"></i> เข้าสู่ระบบ';
+  btn.disabled = false;
+
+  if (res.status === 'success') {
+    adminToken = res.token || 'ok';
+    sessionStorage.setItem('adminToken', adminToken);
+    closeAdminModal();
+    if (_adminCallback) { _adminCallback(); _adminCallback = null; }
+  } else {
+    document.getElementById('adminPwdError').style.display = 'block';
+    document.getElementById('adminPwdInput').focus();
+    document.getElementById('adminPwdInput').select();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   API HELPER
+   - action ทั่วไป → GET ?action=xxx&data=JSON
+   - มีรูป (photoBase64 ขนาดใหญ่) → POST text/plain
 ═══════════════════════════════════════════════════════════ */
 async function api(payload) {
   if (!SCRIPT_URL) {
@@ -857,39 +871,35 @@ async function api(payload) {
   }
 
   const { action, ...data } = payload;
-  const hasPhoto = data.photoBase64 && data.photoBase64.length > 1000;
+  const hasPhoto = data.photoBase64 && data.photoBase64.length > 500;
 
   try {
-    let res, text;
-
     if (hasPhoto) {
-      // POST สำหรับ payload ขนาดใหญ่ (base64 รูป)
-      // ต้อง mode:'no-cors' → ไม่ได้รับ response → ใช้ fallback
+      // POST สำหรับ payload ใหญ่ (base64 รูป)
       await fetch(SCRIPT_URL, {
-        method:   'POST',
+        method: 'POST',
         redirect: 'follow',
-        headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
-        body:     JSON.stringify(payload)
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
       });
-      // เนื่องจาก no-cors ไม่มี response → return success สมมติ
       return { status: 'success', photoUrl: '', gpsStatus: data.gpsStatus || '' };
     } else {
-      // GET สำหรับ request ทั่วไป — GAS รองรับ CORS บน GET
+      // GET สำหรับ request ทั่วไป
       const params = new URLSearchParams({ action, data: JSON.stringify(data) });
-      res  = await fetch(`${SCRIPT_URL}?${params}`, { redirect: 'follow' });
-      text = await res.text();
-      return JSON.parse(text);
+      const res = await fetch(`${SCRIPT_URL}?${params}`, { redirect: 'follow' });
+      const text = await res.text();
+      try { return JSON.parse(text); }
+      catch(e) { return { status: 'error', message: 'Parse error: ' + text.substring(0, 100) }; }
     }
   } catch (e) {
     console.error('API Error:', e);
-    // GAS redirect อาจทำให้ fetch throw ใน some browsers
-    // ลอง POST แบบ text/plain แทน
+    // Fallback: POST text/plain
     try {
       const res2 = await fetch(SCRIPT_URL, {
-        method:   'POST',
+        method: 'POST',
         redirect: 'follow',
-        headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
-        body:     JSON.stringify(payload)
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
       });
       const t2 = await res2.text();
       return JSON.parse(t2);
@@ -905,9 +915,7 @@ async function api(payload) {
 ═══════════════════════════════════════════════════════════ */
 function todayStr() {
   const n = new Date();
-  return n.getFullYear() + '-' +
-    String(n.getMonth()+1).padStart(2,'0') + '-' +
-    String(n.getDate()).padStart(2,'0');
+  return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0');
 }
 function formatDate(v) {
   if (!v) return '-';
@@ -921,18 +929,14 @@ function formatTime(v) {
   const s = String(v).trim();
   if (/^\d{1,2}:\d{2}/.test(s)) return s.substring(0,5);
   if (s.includes('T')) {
-    try {
-      const d = new Date(s);
-      return String(d.getUTCHours()).padStart(2,'0') + ':' + String(d.getUTCMinutes()).padStart(2,'0');
-    } catch(e) {}
+    try { const d=new Date(s); return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0'); }
+    catch(e){}
   }
   return s;
 }
 function normalizeDate(v) {
   if (!v) return '';
-  if (v instanceof Date) {
-    return v.getFullYear() + '-' + String(v.getMonth()+1).padStart(2,'0') + '-' + String(v.getDate()).padStart(2,'0');
-  }
+  if (v instanceof Date) return v.getFullYear()+'-'+String(v.getMonth()+1).padStart(2,'0')+'-'+String(v.getDate()).padStart(2,'0');
   const s = String(v).trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
   if (/^\d{4}-\d{2}-\d{2}T/.test(s)) return s.substring(0,10);
@@ -940,77 +944,60 @@ function normalizeDate(v) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CAMERA — กล้องถ่ายรูปจริง
-   - openCameraModal(): ขอ permission และเปิด stream
-   - switchCamera(): สลับหน้า/หลัง
-   - captureFromCamera(): ถ่ายรูปจาก video → canvas → base64
-   - closeCameraModal(): ปิด stream และ modal
+   CAMERA
 ═══════════════════════════════════════════════════════════ */
-let camStream   = null;
-let camFacing   = 'environment'; // 'environment' = หลัง, 'user' = หน้า
+let camStream = null;
+let camFacing = 'environment';
 
 async function openCameraModal() {
-  const modal = document.getElementById('cameraModal');
-  modal.classList.add('open');
+  document.getElementById('cameraModal').classList.add('open');
   await startCamStream();
 }
-
 async function startCamStream() {
-  // หยุด stream เดิม (ถ้ามี)
   if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-
   try {
     camStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: camFacing, width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false
     });
-    const video = document.getElementById('camVideo');
-    video.srcObject = camStream;
-    document.getElementById('camFacingLabel').textContent =
-      camFacing === 'environment' ? '(กล้องหลัง)' : '(กล้องหน้า)';
+    document.getElementById('camVideo').srcObject = camStream;
+    document.getElementById('camFacingLabel').textContent = camFacing === 'environment' ? '(กล้องหลัง)' : '(กล้องหน้า)';
   } catch (e) {
-    toast('ไม่สามารถเปิดกล้องได้: ' + e.message + '\nลองเลือกรูปแทน', 'error');
+    toast('ไม่สามารถเปิดกล้องได้: ' + e.message, 'error');
     closeCameraModal();
     document.getElementById('photoFileInput').click();
   }
 }
-
 async function switchCamera() {
   camFacing = camFacing === 'environment' ? 'user' : 'environment';
   await startCamStream();
 }
-
 function captureFromCamera() {
-  const video  = document.getElementById('camVideo');
+  const video = document.getElementById('camVideo');
   const canvas = document.getElementById('camCanvas');
-  canvas.width  = video.videoWidth  || 640;
+  canvas.width = video.videoWidth || 640;
   canvas.height = video.videoHeight || 480;
   canvas.getContext('2d').drawImage(video, 0, 0);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-  setPhotoPreview(dataUrl);
+  setPhotoPreview(canvas.toDataURL('image/jpeg', 0.85));
   closeCameraModal();
   toast('ถ่ายรูปสำเร็จ ✅', 'success');
 }
-
 function closeCameraModal() {
   if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
   document.getElementById('cameraModal').classList.remove('open');
 }
-
 function handleFileSelect(e) {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => { setPhotoPreview(ev.target.result); toast('เลือกรูปสำเร็จ ✅', 'success'); };
   reader.readAsDataURL(file);
 }
-
 function setPhotoPreview(dataUrl) {
   document.getElementById('ciPhotoBase64').value = dataUrl;
   const img = document.getElementById('photoPreview');
   img.src = dataUrl;
   document.getElementById('photoBox').classList.add('has-photo');
 }
-
 function clearPhoto() {
   document.getElementById('ciPhotoBase64').value = '';
   document.getElementById('photoPreview').src = '';
@@ -1032,12 +1019,12 @@ function getGPS() {
     statusEl.textContent = '✅ ได้รับตำแหน่งแล้ว';
     coordEl.textContent  = `${lat.toFixed(5)}, ${lng.toFixed(5)} ±${Math.round(acc)}ม.`;
     const card = document.getElementById('gpsCard');
-    card.style.background  = 'linear-gradient(135deg,#E8F5E9,#C8E6C9)';
+    card.style.background = 'linear-gradient(135deg,#E8F5E9,#C8E6C9)';
     card.style.borderColor = '#81C784';
   }, err => {
-    statusEl.textContent = '❌ รับตำแหน่งไม่ได้: ' + err.message;
+    statusEl.textContent = '❌ รับตำแหน่งไม่ได้';
     const card = document.getElementById('gpsCard');
-    card.style.background  = 'linear-gradient(135deg,#FFEBEE,#FFCDD2)';
+    card.style.background = 'linear-gradient(135deg,#FFEBEE,#FFCDD2)';
     card.style.borderColor = '#EF9A9A';
   }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
 }
@@ -1058,22 +1045,26 @@ function setBottomActive(el) {
   el.classList.add('active');
 }
 function switchPage(id) {
-  // Settings ต้องยืนยันตัวตนก่อน
-  if (id === 'settings') {
-    requireAdmin(() => _doSwitchPage('settings'));
-    return;
-  }
+  if (id === 'settings') { requireAdmin(() => _doSwitchPage('settings')); return; }
   _doSwitchPage(id);
 }
-
 function _doSwitchPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-'+id)?.classList.add('active');
-  document.querySelector(`.nav-item[onclick="switchPage('${id}')"]`)?.classList.add('active');
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  const navEl = document.querySelector(`.nav-item[onclick="switchPage('${id}')"]`);
+  if (navEl) navEl.classList.add('active');
   closeSidebar();
-  const map = { dashboard:loadDashboard, checkin:loadTodayDuty, calendar:renderCalendar,
-    schedule:loadSchedule, logs:loadLogs, stats:loadStats, teachers:loadTeachers };
+  const map = {
+    dashboard: loadDashboard,
+    checkin:   loadTodayDuty,
+    calendar:  renderCalendar,
+    schedule:  loadSchedule,
+    logs:      loadLogs,
+    stats:     loadStats,
+    teachers:  loadTeachers
+  };
   if (map[id]) map[id]();
 }
 
@@ -1083,12 +1074,18 @@ function _doSwitchPage(id) {
 function handleLogoUpload(e) {
   const file = e.target.files[0]; if (!file) return;
   const r = new FileReader();
-  r.onload = ev => { applyLogo(ev.target.result); document.getElementById('logoPreviewSettings').src = ev.target.result; };
+  r.onload = ev => {
+    applyLogo(ev.target.result);
+    const prev = document.getElementById('logoPreviewSettings');
+    prev.src = ev.target.result; prev.style.display = 'block';
+  };
   r.readAsDataURL(file);
 }
 function applyLogoUrl() {
   const url = document.getElementById('logoUrlInput').value.trim(); if (!url) return;
-  applyLogo(url); document.getElementById('logoPreviewSettings').src = url;
+  applyLogo(url);
+  const prev = document.getElementById('logoPreviewSettings');
+  prev.src = url; prev.style.display = 'block';
 }
 function applyLogo(url) {
   const img = document.getElementById('logoImg');
@@ -1100,16 +1097,15 @@ function applyLogo(url) {
 /* ═══════════════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════════════ */
-let allLogs=[], allSchedule=[], allTeachers=[];
-let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
-let charts={};
+let allLogs = [], allSchedule = [], allTeachers = [];
+let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+let charts = {};
 
 window.onload = async () => {
-  loadLocalSettings(); // โหลด cache ก่อน (เร็ว)
+  loadLocalSettings();
   setDefaultDates();
-
   showLoading('กำลังเริ่มต้นระบบ...');
-  await loadRemoteConfig(); // ดึง config จาก GAS (override cache)
+  await loadRemoteConfig();
   await api({ action: 'init' });
   await Promise.all([loadDashboard(), loadTeachers()]);
   hideLoading();
@@ -1117,48 +1113,29 @@ window.onload = async () => {
 };
 
 function loadLocalSettings() {
-  // โลโก้
   const logo = localStorage.getItem('schoolLogo');
   if (logo) applyLogo(logo);
 
-  // Script URL — โหลดและแสดงในช่อง input ทุกครั้ง
-  const url = localStorage.getItem('scriptUrl') || '';
-  SCRIPT_URL = url;
+  const url = localStorage.getItem('scriptUrl') || GAS_URL;
+  SCRIPT_URL = url || GAS_URL;
   const urlInput = document.getElementById('setScriptUrl');
-  if (urlInput) urlInput.value = url;
+  if (urlInput) urlInput.value = SCRIPT_URL;
 
-  // ชื่อโรงเรียน
   const name = localStorage.getItem('schoolName') || '';
   if (name) {
     document.getElementById('schoolNameDisplay').textContent = name;
-    const nameInput = document.getElementById('setSchoolName');
-    if (nameInput) nameInput.value = name;
+    const ni = document.getElementById('setSchoolName'); if (ni) ni.value = name;
   }
-
-  // GPS settings
-  const lat = localStorage.getItem('schoolLat') || '';
-  const lng = localStorage.getItem('schoolLng') || '';
-  const radius = localStorage.getItem('gpsRadius') || '';
-  const latInput = document.getElementById('setLat');
-  const lngInput = document.getElementById('setLng');
-  const radiusInput = document.getElementById('setRadius');
-  if (latInput && lat) latInput.value = lat;
-  if (lngInput && lng) lngInput.value = lng;
-  if (radiusInput && radius) radiusInput.value = radius;
-
-  // Telegram
-  const tgToken = localStorage.getItem('tgToken') || '';
-  const tgChat  = localStorage.getItem('tgChat')  || '';
-  const tgTokenInput = document.getElementById('setTgToken');
-  const tgChatInput  = document.getElementById('setTgChat');
-  if (tgTokenInput && tgToken) tgTokenInput.value = tgToken;
-  if (tgChatInput  && tgChat)  tgChatInput.value  = tgChat;
+  ['schoolLat:setLat','schoolLng:setLng','gpsRadius:setRadius','tgToken:setTgToken','tgChat:setTgChat'].forEach(pair => {
+    const [key, elId] = pair.split(':');
+    const v = localStorage.getItem(key); const el = document.getElementById(elId);
+    if (v && el) el.value = v;
+  });
 }
 
 function setDefaultDates() {
-  const today     = todayStr();
-  const thisMonth = today.substring(0,7);
-  const set = (id,v) => { const e=document.getElementById(id); if(e) e.value=v; };
+  const today = todayStr(), thisMonth = today.substring(0,7);
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
   set('scDate', today); set('logsMonthFilter', thisMonth);
   set('statsMonth', thisMonth); set('reportMonth', thisMonth); set('exportMonth', thisMonth);
 
@@ -1166,8 +1143,8 @@ function setDefaultDates() {
     new Date().toLocaleDateString('th-TH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
   const select = document.getElementById('scheduleMonthFilter');
-  for (let m=0; m<12; m++) {
-    const d   = new Date(new Date().getFullYear(), m, 1);
+  for (let m = 0; m < 12; m++) {
+    const d = new Date(new Date().getFullYear(), m, 1);
     const val = d.toISOString().substring(0,7);
     const opt = document.createElement('option');
     opt.value = val;
@@ -1176,12 +1153,35 @@ function setDefaultDates() {
   }
 }
 
+async function loadRemoteConfig() {
+  try {
+    const params = new URLSearchParams({ action: 'getConfig', data: '{}' });
+    const res = await fetch(`${GAS_URL}?${params}`, { redirect: 'follow' });
+    const data = await res.json();
+    if (data.status === 'success') {
+      SCRIPT_URL = GAS_URL;
+      localStorage.setItem('scriptUrl', GAS_URL);
+      if (data.schoolName) {
+        document.getElementById('schoolNameDisplay').textContent = data.schoolName;
+        const ni = document.getElementById('setSchoolName'); if (ni) ni.value = data.schoolName;
+        localStorage.setItem('schoolName', data.schoolName);
+      }
+      document.getElementById('sysStatus').textContent = 'ออนไลน์';
+    } else {
+      document.getElementById('sysStatus').textContent = 'เชื่อมต่อไม่ได้';
+    }
+  } catch (e) {
+    console.warn('getConfig failed:', e.message);
+    document.getElementById('sysStatus').textContent = 'ออฟไลน์';
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD
 ═══════════════════════════════════════════════════════════ */
 async function loadDashboard() {
   showLoading();
-  const res = await api({ action:'getDashboard' });
+  const res = await api({ action: 'getDashboard' });
   hideLoading();
   if (res.status !== 'success') return;
   document.getElementById('ds-total').textContent     = res.today?.total     || 0;
@@ -1190,12 +1190,12 @@ async function loadDashboard() {
   document.getElementById('ds-month').textContent     = res.month?.total     || 0;
   renderRecentLogs(res.recentLogs || []);
   renderWeeklyChart(res.last7Days || []);
-  renderTodayChart(res.today      || {});
+  renderTodayChart(res.today || {});
 }
 
 function renderRecentLogs(logs) {
   const tbody = document.getElementById('recentLogsBody');
-  if (!logs.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:#9eb3b0">ยังไม่มีข้อมูล</td></tr>'; return; }
+  if (!logs.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#9eb3b0">ยังไม่มีข้อมูล</td></tr>'; return; }
   tbody.innerHTML = logs.slice(0,10).map(l => `
     <tr>
       <td>${formatDate(l['วันที่'])}</td>
@@ -1234,13 +1234,13 @@ function renderTodayChart(today) {
    CHECK-IN / CHECK-OUT
 ═══════════════════════════════════════════════════════════ */
 async function loadTodayDuty() {
-  const res = await api({ action:'getSchedule' });
+  const res = await api({ action: 'getSchedule' });
   if (res.status !== 'success') return;
   const today = todayStr();
-  const items = (res.data||[]).filter(s => String(s['วันที่']).substring(0,10) === today);
+  const items = (res.data || []).filter(s => String(s['วันที่']).substring(0,10) === today);
   document.getElementById('todayDutyCount').textContent = items.length + ' คน';
   const c = document.getElementById('todayDutyList');
-  if (!items.length) { c.innerHTML='<p style="text-align:center;color:var(--gray-400);padding:20px;font-size:13px">ไม่มีตารางเวรวันนี้</p>'; return; }
+  if (!items.length) { c.innerHTML = '<p style="text-align:center;color:var(--gray-400);padding:20px;font-size:13px">ไม่มีตารางเวรวันนี้</p>'; return; }
   c.innerHTML = items.map(item => `
     <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100)">
       <div style="width:36px;height:36px;border-radius:50%;background:var(--teal-pale);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:16px;flex-shrink:0"><i class="fas fa-user"></i></div>
@@ -1257,11 +1257,10 @@ async function handleCheckIn(e) {
   const name = document.getElementById('ciTeacherName').value.trim();
   const id   = document.getElementById('ciTeacherId').value.trim();
   if (!name || !id) { toast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error'); return; }
-
   showLoading('กำลังบันทึกการเข้าเวร...');
   const res = await api({
-    action:      'checkIn',
-    teacherId:   id, teacherName: name,
+    action: 'checkIn',
+    teacherId: id, teacherName: name,
     position:    document.getElementById('ciPosition').value,
     dutyType:    document.getElementById('ciDutyType').value,
     location:    document.getElementById('ciLocation').value,
@@ -1271,28 +1270,25 @@ async function handleCheckIn(e) {
     notes:       document.getElementById('ciNotes').value
   });
   hideLoading();
-
   if (res.status === 'success') {
     toast(`✅ บันทึกเข้าเวรสำเร็จ! ${res.gpsStatus||''}`, 'success');
     document.getElementById('ciNotes').value = '';
-    document.getElementById('ciLat').value   = '';
-    document.getElementById('ciLng').value   = '';
+    document.getElementById('ciLat').value = '';
+    document.getElementById('ciLng').value = '';
     clearPhoto();
     const card = document.getElementById('gpsCard');
     card.style.background = ''; card.style.borderColor = '';
     document.getElementById('gpsStatusText').textContent = 'กดปุ่มเพื่อตรวจสอบ GPS';
     document.getElementById('gpsCoordText').textContent  = 'ยังไม่ได้รับตำแหน่ง';
     loadTodayDuty();
-  } else {
-    toast('เกิดข้อผิดพลาด: ' + (res.message||''), 'error');
-  }
+  } else toast('เกิดข้อผิดพลาด: ' + (res.message||''), 'error');
 }
 
 async function handleCheckOut() {
   const id = document.getElementById('coTeacherId').value.trim();
   if (!id) { toast('กรุณากรอกรหัสครู', 'error'); return; }
   showLoading('กำลังบันทึกออกเวร...');
-  const res = await api({ action:'checkOut', teacherId:id, notes:document.getElementById('coNotes').value });
+  const res = await api({ action: 'checkOut', teacherId: id, notes: document.getElementById('coNotes').value });
   hideLoading();
   if (res.status === 'success') {
     toast('✅ บันทึกออกเวรสำเร็จ', 'success');
@@ -1307,7 +1303,7 @@ async function handleCheckOut() {
 function renderCalendar() {
   updateCalLabel();
   const monthStr = calYear + '-' + String(calMonth+1).padStart(2,'0');
-  api({ action:'getCalendar', month:monthStr }).then(res => {
+  api({ action: 'getCalendar', month: monthStr }).then(res => {
     buildCalGrid(res.schedule||[], res.logs||[]);
   });
 }
@@ -1322,21 +1318,21 @@ function buildCalGrid(schedule, logs) {
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
   const today       = todayStr();
   const prevDays    = new Date(calYear, calMonth, 0).getDate();
-  for (let i=firstDay-1; i>=0; i--) {
-    const div=document.createElement('div'); div.className='cal-day other-month';
-    div.innerHTML=`<div class="day-num">${prevDays-i}</div>`; grid.appendChild(div);
+  for (let i = firstDay-1; i >= 0; i--) {
+    const div = document.createElement('div'); div.className = 'cal-day other-month';
+    div.innerHTML = `<div class="day-num">${prevDays-i}</div>`; grid.appendChild(div);
   }
-  for (let d=1; d<=daysInMonth; d++) {
+  for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const daySched = schedule.filter(s => String(s['วันที่']).substring(0,10) === dateStr);
-    const dayLogs  = logs.filter(l     => String(l['วันที่']).substring(0,10) === dateStr);
+    const dayLogs  = logs.filter(l => String(l['วันที่']).substring(0,10) === dateStr);
     const div = document.createElement('div');
-    div.className = 'cal-day' + (dateStr===today ? ' today' : '');
+    div.className = 'cal-day' + (dateStr === today ? ' today' : '');
     div.onclick = () => showCalDay(dateStr, daySched, dayLogs);
     let dots = '';
-    if (dayLogs.length)  dots += `<span class="duty-dot" style="background:var(--teal)"></span>`;
+    if (dayLogs.length) dots += `<span class="duty-dot" style="background:var(--teal)"></span>`;
     if (daySched.length > dayLogs.length) dots += `<span class="duty-dot" style="background:var(--amber)"></span>`;
-    div.innerHTML=`<div class="day-num">${d}</div><div style="margin-top:4px">${dots}</div>${daySched.length?`<div style="font-size:9px;color:var(--gray-600);margin-top:2px">${daySched.length}เวร</div>`:''}`;
+    div.innerHTML = `<div class="day-num">${d}</div><div style="margin-top:4px">${dots}</div>${daySched.length?`<div style="font-size:9px;color:var(--gray-600);margin-top:2px">${daySched.length}เวร</div>`:''}`;
     grid.appendChild(div);
   }
 }
@@ -1344,8 +1340,8 @@ function showCalDay(dateStr, schedule, logs) {
   document.getElementById('calDetailDate').textContent = formatDate(dateStr);
   document.getElementById('calDayDetail').style.display = 'block';
   const c = document.getElementById('calDetailContent');
-  if (!schedule.length && !logs.length) { c.innerHTML='<p style="text-align:center;padding:20px;color:var(--gray-400)">ไม่มีตารางเวรวันนี้</p>'; return; }
-  c.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  if (!schedule.length && !logs.length) { c.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray-400)">ไม่มีตารางเวรวันนี้</p>'; return; }
+  c.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
     <div><h4 style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:10px"><i class="fas fa-calendar"></i> ตารางเวร (${schedule.length})</h4>
       ${schedule.map(s=>`<div style="padding:8px;background:var(--gray-50);border-radius:8px;margin-bottom:6px;font-size:12px"><b>${s['ชื่อครู']||'-'}</b><br>${s['ประเภทเวร']||''} • ${s['สถานที่เวร']||''}<br><span style="color:var(--teal-dark)">${formatTime(s['เวลาเริ่ม'])} – ${formatTime(s['เวลาสิ้นสุด'])}</span></div>`).join('')||'<p style="font-size:12px;color:var(--gray-400)">ไม่มี</p>'}
     </div>
@@ -1353,28 +1349,29 @@ function showCalDay(dateStr, schedule, logs) {
       ${logs.map(l=>`<div style="padding:8px;background:var(--teal-pale);border-radius:8px;margin-bottom:6px;font-size:12px"><b>${l['ชื่อครู']||'-'}</b><br>เข้า ${formatTime(l['เวลาเข้าเวร'])} ออก ${formatTime(l['เวลาออกเวร'])}</div>`).join('')||'<p style="font-size:12px;color:var(--gray-400)">ไม่มี</p>'}
     </div>
   </div>`;
-  document.getElementById('calDayDetail').scrollIntoView({ behavior:'smooth' });
+  document.getElementById('calDayDetail').scrollIntoView({ behavior: 'smooth' });
 }
 function changeCalMonth(delta) {
   calMonth += delta;
-  if (calMonth>11){calMonth=0;calYear++} if (calMonth<0){calMonth=11;calYear--}
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
   renderCalendar();
 }
-function goCalToday() { calYear=new Date().getFullYear(); calMonth=new Date().getMonth(); renderCalendar(); }
+function goCalToday() { calYear = new Date().getFullYear(); calMonth = new Date().getMonth(); renderCalendar(); }
 
 /* ═══════════════════════════════════════════════════════════
-   SCHEDULE / LOGS / STATS / TEACHERS
+   SCHEDULE
 ═══════════════════════════════════════════════════════════ */
 async function loadSchedule() {
   showLoading();
-  const res = await api({ action:'getSchedule', month:document.getElementById('scheduleMonthFilter').value });
-  hideLoading(); allSchedule=res.data||[]; renderScheduleTable(allSchedule);
+  const res = await api({ action: 'getSchedule', month: document.getElementById('scheduleMonthFilter').value });
+  hideLoading(); allSchedule = res.data||[]; renderScheduleTable(allSchedule);
 }
 function renderScheduleTable(data) {
-  const tbody=document.getElementById('scheduleTableBody'), noData=document.getElementById('noScheduleData');
-  if (!data.length){tbody.innerHTML='';noData.style.display='block';return}
-  noData.style.display='none';
-  tbody.innerHTML=data.map(r=>`<tr>
+  const tbody = document.getElementById('scheduleTableBody'), noData = document.getElementById('noScheduleData');
+  if (!data.length) { tbody.innerHTML = ''; noData.style.display = 'block'; return; }
+  noData.style.display = 'none';
+  tbody.innerHTML = data.map(r => `<tr>
     <td>${formatDate(r['วันที่'])}</td><td>${r['วันในสัปดาห์']||'-'}</td>
     <td><span class="badge badge-gray">${r['รหัสครู']||'-'}</span></td>
     <td><b>${r['ชื่อครู']||'-'}</b></td><td>${r['ประเภทเวร']||'-'}</td>
@@ -1384,17 +1381,65 @@ function renderScheduleTable(data) {
     <td><button class="btn btn-sm btn-danger" onclick="deleteScheduleRow('${r['ID']}')"><i class="fas fa-trash"></i></button></td>
   </tr>`).join('');
 }
+async function saveScheduleSingle() {
+  const date = document.getElementById('scDate').value, name = document.getElementById('scTeacherName').value.trim();
+  if (!date) { toast('กรุณาเลือกวันที่', 'error'); return; }
+  if (!name) { toast('กรุณากรอกชื่อครู', 'error'); return; }
+  showLoading();
+  const res = await api({ action: 'addSchedule', entries: [{
+    date, teacherId: document.getElementById('scTeacherId').value.trim(), teacherName: name,
+    dutyType: document.getElementById('scDutyType').value,
+    location: document.getElementById('scLocation').value,
+    startTime: document.getElementById('scStartTime').value,
+    endTime: document.getElementById('scEndTime').value,
+    notes: document.getElementById('scNotes').value
+  }] });
+  hideLoading();
+  if (res.status === 'success') toast('✅ บันทึกตารางเวรสำเร็จ', 'success');
+  else toast('เกิดข้อผิดพลาด: ' + res.message, 'error');
+}
+async function saveScheduleRange() {
+  const startVal = document.getElementById('scRangeStart').value, endVal = document.getElementById('scRangeEnd').value;
+  const name = document.getElementById('scRangeTeacherName').value.trim(), id = document.getElementById('scRangeTeacherId').value.trim();
+  if (!startVal) { toast('กรุณาเลือกวันเริ่มต้น', 'error'); return; }
+  if (!name) { toast('กรุณากรอกชื่อครู', 'error'); return; }
+  const start = new Date(startVal), end = new Date(endVal || startVal);
+  const selDays = [0,1,2,3,4,5,6].filter(i => document.getElementById('dow'+i)?.checked);
+  const entries = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+    if (selDays.includes(d.getDay())) {
+      entries.push({ date: normalizeDate(new Date(d)), teacherId: id, teacherName: name,
+        dutyType: document.getElementById('scRangeDutyType').value,
+        location: document.getElementById('scRangeLocation').value,
+        startTime: '07:00', endTime: '17:00' });
+    }
+  }
+  if (!entries.length) { toast('ไม่พบวันที่ตรงกับที่เลือก', 'error'); return; }
+  if (!confirm(`จะเพิ่มตารางเวร ${entries.length} รายการ ยืนยัน?`)) return;
+  showLoading('กำลังบันทึก...');
+  const res = await api({ action: 'addSchedule', entries });
+  hideLoading();
+  if (res.status === 'success') toast(res.message, 'success');
+  else toast('เกิดข้อผิดพลาด', 'error');
+}
+async function deleteScheduleRow(id) {
+  if (!confirm('ยืนยันการลบ?')) return;
+  toast('ลบข้อมูลสำเร็จ', 'success'); loadSchedule();
+}
 
+/* ═══════════════════════════════════════════════════════════
+   LOGS
+═══════════════════════════════════════════════════════════ */
 async function loadLogs() {
   showLoading();
-  const res = await api({ action:'getLogs', month:document.getElementById('logsMonthFilter').value });
-  hideLoading(); allLogs=res.data||[]; renderLogsTable(allLogs);
+  const res = await api({ action: 'getLogs', month: document.getElementById('logsMonthFilter').value });
+  hideLoading(); allLogs = res.data||[]; renderLogsTable(allLogs);
 }
 function renderLogsTable(data) {
-  const tbody=document.getElementById('logsTableBody'), noData=document.getElementById('noLogsData');
-  if (!data.length){tbody.innerHTML='';noData.style.display='block';return}
-  noData.style.display='none';
-  tbody.innerHTML=data.map(r=>`<tr>
+  const tbody = document.getElementById('logsTableBody'), noData = document.getElementById('noLogsData');
+  if (!data.length) { tbody.innerHTML = ''; noData.style.display = 'block'; return; }
+  noData.style.display = 'none';
+  tbody.innerHTML = data.map(r => `<tr>
     <td>${formatDate(r['วันที่'])}</td><td>${r['วันในสัปดาห์']||'-'}</td>
     <td><b>${r['ชื่อครู']||'-'}</b><br><small style="color:var(--gray-400)">${r['รหัสครู']||''}</small></td>
     <td>${r['ตำแหน่ง']||'-'}</td><td>${r['ประเภทเวร']||'-'}</td>
@@ -1413,24 +1458,27 @@ function filterLogsTable() {
 }
 async function deleteLog(id) {
   if (!confirm('ยืนยันการลบ?')) return;
-  const res = await api({ action:'deleteLog', id });
-  if (res.status==='success'){toast('ลบสำเร็จ','success');loadLogs();}
-  else toast('เกิดข้อผิดพลาด','error');
+  const res = await api({ action: 'deleteLog', id });
+  if (res.status === 'success') { toast('ลบสำเร็จ', 'success'); loadLogs(); }
+  else toast('เกิดข้อผิดพลาด', 'error');
 }
 
+/* ═══════════════════════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════════════════════ */
 async function loadStats() {
   showLoading();
-  const res = await api({ action:'getStats', month:document.getElementById('statsMonth').value });
+  const res = await api({ action: 'getStats', month: document.getElementById('statsMonth').value });
   hideLoading();
-  const data=res.data||[];
-  document.getElementById('statsTotal').textContent=data.length;
-  if (data.length){
-    document.getElementById('statsTop').textContent=data[0].checkedIn;
-    document.getElementById('statsTopName').textContent=data[0].name;
-    const ti=data.reduce((s,d)=>s+d.checkedIn,0), ta=data.reduce((s,d)=>s+d.total,0);
-    document.getElementById('statsRate').textContent=ta?Math.round(ti/ta*100)+'%':'0%';
+  const data = res.data||[];
+  document.getElementById('statsTotal').textContent = data.length;
+  if (data.length) {
+    document.getElementById('statsTop').textContent = data[0].checkedIn;
+    document.getElementById('statsTopName').textContent = data[0].name;
+    const ti = data.reduce((s,d)=>s+d.checkedIn,0), ta = data.reduce((s,d)=>s+d.total,0);
+    document.getElementById('statsRate').textContent = ta ? Math.round(ti/ta*100)+'%' : '0%';
   }
-  document.getElementById('statsTableBody').innerHTML=data.map((r,i)=>`<tr>
+  document.getElementById('statsTableBody').innerHTML = data.map((r,i) => `<tr>
     <td><span class="badge ${i===0?'badge-warning':i===1?'badge-info':'badge-gray'}">#${i+1}</span></td>
     <td><span class="badge badge-gray">${r.id||'-'}</span></td>
     <td><b>${r.name||'-'}</b></td><td>${r.checkedIn}</td><td>${r.checkedOut}</td>
@@ -1442,87 +1490,45 @@ async function loadStats() {
   renderStatsCharts(data);
 }
 function renderStatsCharts(data) {
-  const top10=data.slice(0,10);
-  const c1=document.getElementById('chartStatsTop')?.getContext('2d');
-  if (c1){if(charts.st)charts.st.destroy();charts.st=new Chart(c1,{type:'bar',data:{labels:top10.map(d=>d.name),datasets:[{label:'เข้าเวร',data:top10.map(d=>d.checkedIn),backgroundColor:'rgba(38,166,154,.75)',borderRadius:6}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{grid:{display:false}}}}})}
-  const c2=document.getElementById('chartStatsDuty')?.getContext('2d');
-  if (c2&&data.length){if(charts.sd)charts.sd.destroy();charts.sd=new Chart(c2,{type:'doughnut',data:{labels:['เข้าเวรแล้ว','ออกเวรครบ'],datasets:[{data:[data.reduce((s,d)=>s+d.checkedIn,0),data.reduce((s,d)=>s+d.checkedOut,0)],backgroundColor:['#26A69A','#7CB342'],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom'}}}})}
+  const top10 = data.slice(0,10);
+  const c1 = document.getElementById('chartStatsTop')?.getContext('2d');
+  if (c1) { if(charts.st) charts.st.destroy(); charts.st = new Chart(c1,{type:'bar',data:{labels:top10.map(d=>d.name),datasets:[{label:'เข้าเวร',data:top10.map(d=>d.checkedIn),backgroundColor:'rgba(38,166,154,.75)',borderRadius:6}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{grid:{display:false}}}}}); }
+  const c2 = document.getElementById('chartStatsDuty')?.getContext('2d');
+  if (c2 && data.length) { if(charts.sd) charts.sd.destroy(); charts.sd = new Chart(c2,{type:'doughnut',data:{labels:['เข้าเวรแล้ว','ออกเวรครบ'],datasets:[{data:[data.reduce((s,d)=>s+d.checkedIn,0),data.reduce((s,d)=>s+d.checkedOut,0)],backgroundColor:['#26A69A','#7CB342'],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom'}}}}); }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   TEACHERS
+═══════════════════════════════════════════════════════════ */
 async function loadTeachers() {
-  const res=await api({ action:'getTeachers' }); allTeachers=res.data||[];
-  const tbody=document.getElementById('teachersTableBody'), noData=document.getElementById('noTeachersData');
-  if (!allTeachers.length){tbody.innerHTML='';noData.style.display='block';return}
-  noData.style.display='none';
-  tbody.innerHTML=allTeachers.map(t=>`<tr>
+  const res = await api({ action: 'getTeachers' }); allTeachers = res.data||[];
+  const tbody = document.getElementById('teachersTableBody'), noData = document.getElementById('noTeachersData');
+  if (!allTeachers.length) { tbody.innerHTML = ''; noData.style.display = 'block'; return; }
+  noData.style.display = 'none';
+  tbody.innerHTML = allTeachers.map(t => `<tr>
     <td><span class="badge badge-gray">${t['รหัสครู']||'-'}</span></td>
     <td><b>${t['ชื่อ-นามสกุล']||'-'}</b></td><td>${t['ตำแหน่ง']||'-'}</td>
     <td>${t['วิชาเอก']||'-'}</td><td>${t['โทรศัพท์']||'-'}</td>
     <td>${t['สถานะ']==='ปกติ'?'<span class="badge badge-success">ปกติ</span>':`<span class="badge badge-danger">${t['สถานะ']}</span>`}</td>
   </tr>`).join('');
 }
-function showAddTeacherForm(){document.getElementById('addTeacherForm').style.display='block'}
-function hideAddTeacherForm(){document.getElementById('addTeacherForm').style.display='none'}
+function showAddTeacherForm() { document.getElementById('addTeacherForm').style.display = 'block'; }
+function hideAddTeacherForm() { document.getElementById('addTeacherForm').style.display = 'none'; }
 async function saveTeacher() {
-  const id=document.getElementById('tId').value.trim(), name=document.getElementById('tName').value.trim();
-  if(!id){toast('กรุณากรอกรหัสครู','error');return}
-  if(!name){toast('กรุณากรอกชื่อ-นามสกุล','error');return}
+  const id = document.getElementById('tId').value.trim(), name = document.getElementById('tName').value.trim();
+  if (!id) { toast('กรุณากรอกรหัสครู', 'error'); return; }
+  if (!name) { toast('กรุณากรอกชื่อ-นามสกุล', 'error'); return; }
   showLoading('กำลังบันทึกข้อมูลครู...');
-  const res=await api({ action:'addTeacher',teacherId:id,name,position:document.getElementById('tPosition').value,
-    subject:document.getElementById('tSubject').value,phone:document.getElementById('tPhone').value,
-    email:document.getElementById('tEmail').value,lineId:document.getElementById('tLine').value,
-    telegramId:document.getElementById('tTelegram').value });
+  const res = await api({ action: 'addTeacher', teacherId: id, name,
+    position: document.getElementById('tPosition').value, subject: document.getElementById('tSubject').value,
+    phone: document.getElementById('tPhone').value, email: document.getElementById('tEmail').value,
+    lineId: document.getElementById('tLine').value, telegramId: document.getElementById('tTelegram').value });
   hideLoading();
-  if(res.status==='success'){toast('✅ เพิ่มครูสำเร็จ','success');hideAddTeacherForm();
-    ['tId','tName','tPosition','tSubject','tPhone','tEmail','tLine','tTelegram'].forEach(i=>document.getElementById(i).value='');
-    loadTeachers();}
-  else toast('เกิดข้อผิดพลาด: '+(res.message||''),'error');
-}
-
-/* ═══════════════════════════════════════════════════════════
-   SCHEDULE ADD
-═══════════════════════════════════════════════════════════ */
-async function saveScheduleSingle() {
-  const date=document.getElementById('scDate').value, name=document.getElementById('scTeacherName').value.trim();
-  if(!date){toast('กรุณาเลือกวันที่','error');return}
-  if(!name){toast('กรุณากรอกชื่อครู','error');return}
-  showLoading();
-  const res=await api({ action:'addSchedule', entries:[{
-    date, teacherId:document.getElementById('scTeacherId').value.trim(), teacherName:name,
-    dutyType:document.getElementById('scDutyType').value, location:document.getElementById('scLocation').value,
-    startTime:document.getElementById('scStartTime').value, endTime:document.getElementById('scEndTime').value,
-    notes:document.getElementById('scNotes').value }] });
-  hideLoading();
-  if(res.status==='success')toast('✅ บันทึกตารางเวรสำเร็จ','success');
-  else toast('เกิดข้อผิดพลาด: '+res.message,'error');
-}
-async function saveScheduleRange() {
-  const startVal=document.getElementById('scRangeStart').value, endVal=document.getElementById('scRangeEnd').value;
-  const name=document.getElementById('scRangeTeacherName').value.trim(), id=document.getElementById('scRangeTeacherId').value.trim();
-  if(!startVal){toast('กรุณาเลือกวันเริ่มต้น','error');return}
-  if(!name){toast('กรุณากรอกชื่อครู','error');return}
-  const start=new Date(startVal), end=new Date(endVal||startVal);
-  const selDays=[0,1,2,3,4,5,6].filter(i=>document.getElementById('dow'+i)?.checked);
-  const entries=[];
-  for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
-    if(selDays.includes(d.getDay())){
-      entries.push({ date:normalizeDate(d), teacherId:id, teacherName:name,
-        dutyType:document.getElementById('scRangeDutyType').value,
-        location:document.getElementById('scRangeLocation').value,
-        startTime:'07:00', endTime:'17:00' });
-    }
-  }
-  if(!entries.length){toast('ไม่พบวันที่ตรงกับที่เลือก','error');return}
-  if(!confirm(`จะเพิ่มตารางเวร ${entries.length} รายการ ยืนยัน?`))return;
-  showLoading('กำลังบันทึก...');
-  const res=await api({ action:'addSchedule', entries });
-  hideLoading();
-  if(res.status==='success')toast(res.message,'success');
-  else toast('เกิดข้อผิดพลาด','error');
-}
-async function deleteScheduleRow(id) {
-  if(!confirm('ยืนยันการลบ?'))return;
-  toast('ลบข้อมูลสำเร็จ','success'); loadSchedule();
+  if (res.status === 'success') {
+    toast('✅ เพิ่มครูสำเร็จ', 'success'); hideAddTeacherForm();
+    ['tId','tName','tPosition','tSubject','tPhone','tEmail','tLine','tTelegram'].forEach(i => document.getElementById(i).value = '');
+    loadTeachers();
+  } else toast('เกิดข้อผิดพลาด: ' + (res.message||''), 'error');
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1530,32 +1536,32 @@ async function deleteScheduleRow(id) {
 ═══════════════════════════════════════════════════════════ */
 async function exportExcel() {
   showLoading('กำลังสร้างไฟล์...');
-  const res=await api({ action:'exportReport' }); hideLoading();
-  if(res.status!=='success'||!res.data?.length){toast('ไม่มีข้อมูล','error');return}
-  const ws=XLSX.utils.json_to_sheet(res.data), wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'บันทึกเวร');
-  XLSX.writeFile(wb,`รายงานครูเวร_${todayStr()}.xlsx`);
-  toast('ดาวน์โหลดสำเร็จ','success');
+  const res = await api({ action: 'exportReport' }); hideLoading();
+  if (res.status !== 'success' || !res.data?.length) { toast('ไม่มีข้อมูล', 'error'); return; }
+  const ws = XLSX.utils.json_to_sheet(res.data), wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'บันทึกเวร');
+  XLSX.writeFile(wb, `รายงานครูเวร_${todayStr()}.xlsx`);
+  toast('ดาวน์โหลดสำเร็จ', 'success');
 }
 async function exportExcelReport() {
-  const month=document.getElementById('exportMonth').value, type=document.getElementById('exportDataType').value;
+  const month = document.getElementById('exportMonth').value, type = document.getElementById('exportDataType').value;
   showLoading('กำลังสร้างรายงาน...');
-  const actionMap={logs:'exportReport',schedule:'getSchedule',stats:'getStats'};
-  const res=await api({ action:actionMap[type]||'exportReport', month }); hideLoading();
-  if(!res.data?.length){toast('ไม่มีข้อมูล','error');return}
-  const ws=XLSX.utils.json_to_sheet(res.data), wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'รายงาน');
-  XLSX.writeFile(wb,`รายงาน_${type}_${month}.xlsx`);
-  toast('ดาวน์โหลดสำเร็จ','success');
+  const actionMap = { logs: 'exportReport', schedule: 'getSchedule', stats: 'getStats' };
+  const res = await api({ action: actionMap[type]||'exportReport', month }); hideLoading();
+  if (!res.data?.length) { toast('ไม่มีข้อมูล', 'error'); return; }
+  const ws = XLSX.utils.json_to_sheet(res.data), wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'รายงาน');
+  XLSX.writeFile(wb, `รายงาน_${type}_${month}.xlsx`);
+  toast('ดาวน์โหลดสำเร็จ', 'success');
 }
 async function generatePDF() {
   showLoading('กำลังสร้าง PDF...');
-  const res=await api({ action:'exportReport', month:document.getElementById('reportMonth').value });
+  const res = await api({ action: 'exportReport', month: document.getElementById('reportMonth').value });
   hideLoading();
-  if(res.status!=='success'){toast('สร้างรายงานไม่ได้','error');return}
-  const data=res.data||[], preview=document.getElementById('reportPreview'), content=document.getElementById('reportContent');
-  preview.style.display='block';
-  content.innerHTML=`<div style="font-family:'Sarabun',sans-serif;padding:20px;max-width:800px;margin:auto">
+  if (res.status !== 'success') { toast('สร้างรายงานไม่ได้', 'error'); return; }
+  const data = res.data||[], preview = document.getElementById('reportPreview'), content = document.getElementById('reportContent');
+  preview.style.display = 'block';
+  content.innerHTML = `<div style="font-family:'Sarabun',sans-serif;padding:20px;max-width:800px;margin:auto">
     <div style="text-align:center;margin-bottom:24px;border-bottom:3px solid var(--teal);padding-bottom:16px">
       <h2 style="font-family:'Kanit',sans-serif;font-size:20px;color:var(--teal-dark)">รายงานสรุปการเวรครู</h2>
       <p style="color:var(--gray-600)">สร้างเมื่อ ${new Date().toLocaleDateString('th-TH')}</p>
@@ -1575,14 +1581,14 @@ async function generatePDF() {
     </table>
     <div style="margin-top:20px;text-align:right;font-size:11px;color:var(--gray-400)">จำนวนทั้งหมด: ${data.length} รายการ</div>
   </div>`;
-  preview.scrollIntoView({ behavior:'smooth' });
-  toast('สร้างรายงานสำเร็จ - กดพิมพ์เพื่อบันทึก PDF','success');
+  preview.scrollIntoView({ behavior: 'smooth' });
+  toast('สร้างรายงานสำเร็จ - กดพิมพ์เพื่อบันทึก PDF', 'success');
 }
 function printReport() {
-  const content=document.getElementById('reportContent').innerHTML;
-  const w=window.open('','_blank');
+  const content = document.getElementById('reportContent').innerHTML;
+  const w = window.open('','_blank');
   w.document.write(`<html><head><title>รายงานครูเวร</title><link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet"><style>body{font-family:'Sarabun',sans-serif}@media print{body{margin:0}}</style></head><body>${content}</body></html>`);
-  w.document.close(); setTimeout(()=>{w.print();w.close();},1000);
+  w.document.close(); setTimeout(() => { w.print(); w.close(); }, 1000);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1599,10 +1605,9 @@ function saveSettings() {
 
   if (!url) { toast('กรุณาใส่ Script URL', 'error'); return; }
 
-  // บันทึกทุกค่าลง localStorage
   SCRIPT_URL = url;
   localStorage.setItem('scriptUrl', url);
-  if (name)    { localStorage.setItem('schoolName', name);   document.getElementById('schoolNameDisplay').textContent = name; }
+  if (name)    { localStorage.setItem('schoolName', name); document.getElementById('schoolNameDisplay').textContent = name; }
   if (lat)       localStorage.setItem('schoolLat',  lat);
   if (lng)       localStorage.setItem('schoolLng',  lng);
   if (radius)    localStorage.setItem('gpsRadius',  radius);
@@ -1611,9 +1616,9 @@ function saveSettings() {
 
   toast('✅ บันทึกการตั้งค่าสำเร็จ! กำลังเชื่อมต่อ...', 'success');
   document.getElementById('sysStatus').textContent = 'กำลังเชื่อมต่อ...';
-  api({ action:'init' }).then(res => {
-    document.getElementById('sysStatus').textContent = res.status==='success' ? 'ออนไลน์' : 'เชื่อมต่อไม่ได้';
-    if (res.status==='success') { loadDashboard(); loadTeachers(); }
+  api({ action: 'init' }).then(res => {
+    document.getElementById('sysStatus').textContent = res.status === 'success' ? 'ออนไลน์' : 'เชื่อมต่อไม่ได้';
+    if (res.status === 'success') { loadDashboard(); loadTeachers(); }
   });
 }
 
@@ -1621,118 +1626,23 @@ function saveSettings() {
    UI HELPERS
 ═══════════════════════════════════════════════════════════ */
 function getStatusBadge(s) {
-  const m={'เข้าเวรแล้ว':'badge-info','ออกเวรแล้ว':'badge-success','ขาดเวร':'badge-danger','รอเข้าเวร':'badge-warning','ปกติ':'badge-success'};
+  const m = { 'เข้าเวรแล้ว':'badge-info','ออกเวรแล้ว':'badge-success','ขาดเวร':'badge-danger','รอเข้าเวร':'badge-warning','ปกติ':'badge-success' };
   return `<span class="badge ${m[s]||'badge-gray'}">${s||'-'}</span>`;
 }
 function showLoading(msg) {
-  const el=document.getElementById('loadingOverlay'); el.style.display='flex';
-  const t=el.querySelector('.loading-text'); if(t) t.textContent=msg||'กำลังโหลด...';
+  const el = document.getElementById('loadingOverlay'); el.style.display = 'flex';
+  const t = el.querySelector('.loading-text'); if (t) t.textContent = msg||'กำลังโหลด...';
 }
-function hideLoading() { document.getElementById('loadingOverlay').style.display='none'; }
+function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
 function toast(msg, type='info') {
-  const c=document.getElementById('toastContainer');
-  const t=document.createElement('div'); t.className=`toast ${type}`;
-  const icons={success:'fas fa-check-circle',error:'fas fa-times-circle',info:'fas fa-info-circle'};
-  const colors={success:'#43A047',error:'#E53935',info:'var(--teal)'};
-  t.innerHTML=`<i class="${icons[type]||icons.info}" style="color:${colors[type]||colors.info};font-size:18px;flex-shrink:0"></i><span style="font-size:14px;font-weight:500">${msg}</span>`;
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div'); t.className = `toast ${type}`;
+  const icons = { success:'fas fa-check-circle', error:'fas fa-times-circle', info:'fas fa-info-circle' };
+  const colors = { success:'#43A047', error:'#E53935', info:'var(--teal)' };
+  t.innerHTML = `<i class="${icons[type]||icons.info}" style="color:${colors[type]||colors.info};font-size:18px;flex-shrink:0"></i><span style="font-size:14px;font-weight:500">${msg}</span>`;
   c.appendChild(t);
-  setTimeout(()=>{t.style.animation='slideIn .3s ease reverse';setTimeout(()=>t.remove(),300);},3500);
+  setTimeout(() => { t.style.animation = 'slideIn .3s ease reverse'; setTimeout(() => t.remove(), 300); }, 3500);
 }
-
-/* ═══════════════════════════════════════════════════════════
-   เพิ่ม function loadRemoteConfig()
-═══════════════════════════════════════════════════════════ */
-async function loadRemoteConfig() {
-  try {
-    const params = new URLSearchParams({ action: 'getConfig', data: '{}' });
-    const res = await fetch(`${GAS_URL}?${params}`, { redirect: 'follow' });
-    const data = await res.json();
-    if (data.status === 'success') {
-      SCRIPT_URL = GAS_URL; // ยืนยันว่าใช้ได้
-      if (data.schoolName) {
-        document.getElementById('schoolNameDisplay').textContent = data.schoolName;
-        document.getElementById('setSchoolName').value = data.schoolName;
-      }
-      // เก็บ cache local สำหรับ offline fallback
-      localStorage.setItem('scriptUrl',  GAS_URL);
-      localStorage.setItem('schoolName', data.schoolName || '');
-      document.getElementById('sysStatus').textContent = 'ออนไลน์';
-    }
-  } catch(e) {
-    // fallback ใช้ hardcode URL
-    console.warn('getConfig failed, using hardcode URL');
-  }
-}
-
-/* ═══════════════════════════════════
-   ADMIN AUTH
-═══════════════════════════════════ */
-let adminToken = sessionStorage.getItem('adminToken') || '';
-
-function requireAdmin(callback) {
-  // ถ้ามี token ใน session (ล็อกอินแล้วในแท็บนี้) → ผ่านเลย
-  if (adminToken) { callback(); return; }
-  // แสดง modal ขอรหัส
-  document.getElementById('adminModal').style.display = 'flex';
-  document.getElementById('adminPwdInput').value = '';
-  document.getElementById('adminPwdError').style.display = 'none';
-  // เก็บ callback ไว้เรียกหลัง verify สำเร็จ
-  window._adminCallback = callback;
-  setTimeout(() => document.getElementById('adminPwdInput').focus(), 100);
-}
-
-function closeAdminModal() {
-  document.getElementById('adminModal').style.display = 'none';
-  window._adminCallback = null;
-}
-
-/* ═══════════════════════════════════
-   ADMIN AUTH
-═══════════════════════════════════ */
-let adminToken = sessionStorage.getItem('adminToken') || '';
-
-function requireAdmin(callback) {
-  // ถ้ามี token ใน session (ล็อกอินแล้วในแท็บนี้) → ผ่านเลย
-  if (adminToken) { callback(); return; }
-  // แสดง modal ขอรหัส
-  document.getElementById('adminModal').style.display = 'flex';
-  document.getElementById('adminPwdInput').value = '';
-  document.getElementById('adminPwdError').style.display = 'none';
-  // เก็บ callback ไว้เรียกหลัง verify สำเร็จ
-  window._adminCallback = callback;
-  setTimeout(() => document.getElementById('adminPwdInput').focus(), 100);
-}
-
-function closeAdminModal() {
-  document.getElementById('adminModal').style.display = 'none';
-  window._adminCallback = null;
-}
-
-async function verifyAdminPwd() {
-  const pwd = document.getElementById('adminPwdInput').value.trim();
-  if (!pwd) return;
-
-  const btn = document.querySelector('#adminModal .btn-primary');
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
-  btn.disabled = true;
-
-  const res = await api({ action: 'verifyAdmin', password: pwd });
-
-  btn.innerHTML = '<i class="fas fa-unlock"></i> เข้าสู่ระบบ';
-  btn.disabled = false;
-
-  if (res.status === 'success') {
-    adminToken = res.token;
-    sessionStorage.setItem('adminToken', adminToken);
-    closeAdminModal();
-    if (window._adminCallback) window._adminCallback();
-  } else {
-    document.getElementById('adminPwdError').style.display = 'block';
-    document.getElementById('adminPwdInput').focus();
-    document.getElementById('adminPwdInput').select();
-  }
-}
-
 </script>
 </body>
 </html>
