@@ -271,7 +271,8 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
   .stat-card-value{font-size:25px}.stat-card{padding:14px}
   main{padding:12px 10px 80px}
 }
-   /* CHECK-IN PAGE — responsive grid */
+
+/* CHECK-IN PAGE — responsive grid */
 .checkin-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -784,7 +785,7 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
       </div>
     </div>
   </div>
-  <div class="checkin-grid">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
     <div class="glass">
       <div class="glass-header"><div class="glass-title"><div class="icon-box g1"><i class="fas fa-school"></i></div> ข้อมูลโรงเรียน</div></div>
       <div class="form-grid" style="gap:14px">
@@ -807,13 +808,42 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
   <div style="margin-top:0"><button class="btn btn-primary btn-lg" onclick="saveSettings()"><i class="fas fa-save"></i> บันทึกการตั้งค่า</button></div>
 </div>
 
+
+      <!-- ADMIN PASSWORD MODAL -->
+      <div id="adminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+        z-index:6000;align-items:center;justify-content:center">
+        <div style="background:#fff;border-radius:20px;padding:32px;width:90%;max-width:380px;
+          box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center">
+          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-dark));
+            display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;color:#fff">
+            <i class="fas fa-lock"></i>
+          </div>
+          <h3 style="font-family:'Kanit',sans-serif;font-size:18px;margin-bottom:6px">ยืนยันตัวตน Admin</h3>
+          <p style="font-size:13px;color:var(--gray-600);margin-bottom:20px">กรุณาใส่รหัสผ่านเพื่อเข้าถึงการตั้งค่า</p>
+          <input type="password" id="adminPwdInput" class="form-control"
+            placeholder="รหัสผ่าน Admin"
+            style="text-align:center;font-size:18px;letter-spacing:4px;margin-bottom:16px"
+            onkeydown="if(event.key==='Enter')verifyAdminPwd()">
+          <div id="adminPwdError" style="color:#E53935;font-size:13px;margin-bottom:12px;display:none">
+            <i class="fas fa-times-circle"></i> รหัสผ่านไม่ถูกต้อง
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-outline" style="flex:1" onclick="closeAdminModal()">ยกเลิก</button>
+            <button class="btn btn-primary" style="flex:1" onclick="verifyAdminPwd()">
+              <i class="fas fa-unlock"></i> เข้าสู่ระบบ
+            </button>
+          </div>
+        </div>
+      </div>
 </main>
 
 <script>
 /* ═══════════════════════════════════════════════════════════
    CONFIG — แก้ SCRIPT_URL ตรงนี้ หรือตั้งค่าผ่านหน้า Settings
 ═══════════════════════════════════════════════════════════ */
-let SCRIPT_URL = localStorage.getItem('scriptUrl') || '';
+// SCRIPT_URL จะถูก fetch จาก GAS อัตโนมัติ ไม่ต้องกรอก
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyM5HST3XIp8NFfgRTHE5oeUvpWHIgdbqvBnfEKEyOSCUMFF4cBJtV4sbztk3IQhVkzrw/exec'; // ← hardcode เฉพาะตรงนี้จุดเดียว
+let SCRIPT_URL = GAS_URL;
 
 /* ═══════════════════════════════════════════════════════════
    API HELPER — fetch() ไปยัง Google Apps Script doGet
@@ -1028,6 +1058,15 @@ function setBottomActive(el) {
   el.classList.add('active');
 }
 function switchPage(id) {
+  // Settings ต้องยืนยันตัวตนก่อน
+  if (id === 'settings') {
+    requireAdmin(() => _doSwitchPage('settings'));
+    return;
+  }
+  _doSwitchPage(id);
+}
+
+function _doSwitchPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+id)?.classList.add('active');
@@ -1066,18 +1105,14 @@ let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
 let charts={};
 
 window.onload = async () => {
-  loadLocalSettings();
+  loadLocalSettings(); // โหลด cache ก่อน (เร็ว)
   setDefaultDates();
-  if (!SCRIPT_URL) {
-    toast('⚠️ ยังไม่ได้ตั้งค่า Script URL กรุณาไปที่ ตั้งค่าระบบ', 'error');
-    document.getElementById('sysStatus').textContent = 'ไม่มี Script URL';
-    return;
-  }
+
   showLoading('กำลังเริ่มต้นระบบ...');
-  await api({ action:'init' });
+  await loadRemoteConfig(); // ดึง config จาก GAS (override cache)
+  await api({ action: 'init' });
   await Promise.all([loadDashboard(), loadTeachers()]);
   hideLoading();
-  document.getElementById('sysStatus').textContent = 'ออนไลน์';
   toast('ยินดีต้อนรับสู่ระบบครูเวร 🎉', 'success');
 };
 
@@ -1603,6 +1638,101 @@ function toast(msg, type='info') {
   c.appendChild(t);
   setTimeout(()=>{t.style.animation='slideIn .3s ease reverse';setTimeout(()=>t.remove(),300);},3500);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   เพิ่ม function loadRemoteConfig()
+═══════════════════════════════════════════════════════════ */
+async function loadRemoteConfig() {
+  try {
+    const params = new URLSearchParams({ action: 'getConfig', data: '{}' });
+    const res = await fetch(`${GAS_URL}?${params}`, { redirect: 'follow' });
+    const data = await res.json();
+    if (data.status === 'success') {
+      SCRIPT_URL = GAS_URL; // ยืนยันว่าใช้ได้
+      if (data.schoolName) {
+        document.getElementById('schoolNameDisplay').textContent = data.schoolName;
+        document.getElementById('setSchoolName').value = data.schoolName;
+      }
+      // เก็บ cache local สำหรับ offline fallback
+      localStorage.setItem('scriptUrl',  GAS_URL);
+      localStorage.setItem('schoolName', data.schoolName || '');
+      document.getElementById('sysStatus').textContent = 'ออนไลน์';
+    }
+  } catch(e) {
+    // fallback ใช้ hardcode URL
+    console.warn('getConfig failed, using hardcode URL');
+  }
+}
+
+/* ═══════════════════════════════════
+   ADMIN AUTH
+═══════════════════════════════════ */
+let adminToken = sessionStorage.getItem('adminToken') || '';
+
+function requireAdmin(callback) {
+  // ถ้ามี token ใน session (ล็อกอินแล้วในแท็บนี้) → ผ่านเลย
+  if (adminToken) { callback(); return; }
+  // แสดง modal ขอรหัส
+  document.getElementById('adminModal').style.display = 'flex';
+  document.getElementById('adminPwdInput').value = '';
+  document.getElementById('adminPwdError').style.display = 'none';
+  // เก็บ callback ไว้เรียกหลัง verify สำเร็จ
+  window._adminCallback = callback;
+  setTimeout(() => document.getElementById('adminPwdInput').focus(), 100);
+}
+
+function closeAdminModal() {
+  document.getElementById('adminModal').style.display = 'none';
+  window._adminCallback = null;
+}
+
+/* ═══════════════════════════════════
+   ADMIN AUTH
+═══════════════════════════════════ */
+let adminToken = sessionStorage.getItem('adminToken') || '';
+
+function requireAdmin(callback) {
+  // ถ้ามี token ใน session (ล็อกอินแล้วในแท็บนี้) → ผ่านเลย
+  if (adminToken) { callback(); return; }
+  // แสดง modal ขอรหัส
+  document.getElementById('adminModal').style.display = 'flex';
+  document.getElementById('adminPwdInput').value = '';
+  document.getElementById('adminPwdError').style.display = 'none';
+  // เก็บ callback ไว้เรียกหลัง verify สำเร็จ
+  window._adminCallback = callback;
+  setTimeout(() => document.getElementById('adminPwdInput').focus(), 100);
+}
+
+function closeAdminModal() {
+  document.getElementById('adminModal').style.display = 'none';
+  window._adminCallback = null;
+}
+
+async function verifyAdminPwd() {
+  const pwd = document.getElementById('adminPwdInput').value.trim();
+  if (!pwd) return;
+
+  const btn = document.querySelector('#adminModal .btn-primary');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
+  btn.disabled = true;
+
+  const res = await api({ action: 'verifyAdmin', password: pwd });
+
+  btn.innerHTML = '<i class="fas fa-unlock"></i> เข้าสู่ระบบ';
+  btn.disabled = false;
+
+  if (res.status === 'success') {
+    adminToken = res.token;
+    sessionStorage.setItem('adminToken', adminToken);
+    closeAdminModal();
+    if (window._adminCallback) window._adminCallback();
+  } else {
+    document.getElementById('adminPwdError').style.display = 'block';
+    document.getElementById('adminPwdInput').focus();
+    document.getElementById('adminPwdInput').select();
+  }
+}
+
 </script>
 </body>
 </html>
