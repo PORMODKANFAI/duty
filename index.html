@@ -813,7 +813,7 @@ main{flex:1;overflow-y:auto;padding:28px;background:var(--yellow-bg)}
 /* ═══════════════════════════════════════════════════════════
    CONFIG — แก้ SCRIPT_URL ตรงนี้ หรือตั้งค่าผ่านหน้า Settings
 ═══════════════════════════════════════════════════════════ */
-let SCRIPT_URL = localStorage.getItem('scriptUrl') || 'https://script.google.com/macros/s/AKfycbxoPnr7nxlkKqJyJPjXofC2fQoA27j-xZRdWLNESBPILlQBTzWRmUxD0qjY0ak5yWY3kw/exec';
+let SCRIPT_URL = localStorage.getItem('scriptUrl') || '';
 
 /* ═══════════════════════════════════════════════════════════
    API HELPER — fetch() ไปยัง Google Apps Script doGet
@@ -1082,16 +1082,42 @@ window.onload = async () => {
 };
 
 function loadLocalSettings() {
+  // โลโก้
   const logo = localStorage.getItem('schoolLogo');
   if (logo) applyLogo(logo);
+
+  // Script URL — โหลดและแสดงในช่อง input ทุกครั้ง
   const url = localStorage.getItem('scriptUrl') || '';
   SCRIPT_URL = url;
-  document.getElementById('setScriptUrl').value = url;
+  const urlInput = document.getElementById('setScriptUrl');
+  if (urlInput) urlInput.value = url;
+
+  // ชื่อโรงเรียน
   const name = localStorage.getItem('schoolName') || '';
   if (name) {
     document.getElementById('schoolNameDisplay').textContent = name;
-    document.getElementById('setSchoolName').value = name;
+    const nameInput = document.getElementById('setSchoolName');
+    if (nameInput) nameInput.value = name;
   }
+
+  // GPS settings
+  const lat = localStorage.getItem('schoolLat') || '';
+  const lng = localStorage.getItem('schoolLng') || '';
+  const radius = localStorage.getItem('gpsRadius') || '';
+  const latInput = document.getElementById('setLat');
+  const lngInput = document.getElementById('setLng');
+  const radiusInput = document.getElementById('setRadius');
+  if (latInput && lat) latInput.value = lat;
+  if (lngInput && lng) lngInput.value = lng;
+  if (radiusInput && radius) radiusInput.value = radius;
+
+  // Telegram
+  const tgToken = localStorage.getItem('tgToken') || '';
+  const tgChat  = localStorage.getItem('tgChat')  || '';
+  const tgTokenInput = document.getElementById('setTgToken');
+  const tgChatInput  = document.getElementById('setTgChat');
+  if (tgTokenInput && tgToken) tgTokenInput.value = tgToken;
+  if (tgChatInput  && tgChat)  tgChatInput.value  = tgChat;
 }
 
 function setDefaultDates() {
@@ -1528,12 +1554,26 @@ function printReport() {
    SETTINGS
 ═══════════════════════════════════════════════════════════ */
 function saveSettings() {
-  const url  = document.getElementById('setScriptUrl').value.trim();
-  const name = document.getElementById('setSchoolName').value.trim();
+  const url    = document.getElementById('setScriptUrl').value.trim();
+  const name   = document.getElementById('setSchoolName').value.trim();
+  const lat    = document.getElementById('setLat').value.trim();
+  const lng    = document.getElementById('setLng').value.trim();
+  const radius = document.getElementById('setRadius').value.trim();
+  const tgToken= document.getElementById('setTgToken').value.trim();
+  const tgChat = document.getElementById('setTgChat').value.trim();
+
   if (!url) { toast('กรุณาใส่ Script URL', 'error'); return; }
+
+  // บันทึกทุกค่าลง localStorage
   SCRIPT_URL = url;
   localStorage.setItem('scriptUrl', url);
-  if (name) { localStorage.setItem('schoolName', name); document.getElementById('schoolNameDisplay').textContent = name; }
+  if (name)    { localStorage.setItem('schoolName', name);   document.getElementById('schoolNameDisplay').textContent = name; }
+  if (lat)       localStorage.setItem('schoolLat',  lat);
+  if (lng)       localStorage.setItem('schoolLng',  lng);
+  if (radius)    localStorage.setItem('gpsRadius',  radius);
+  if (tgToken)   localStorage.setItem('tgToken',    tgToken);
+  if (tgChat)    localStorage.setItem('tgChat',     tgChat);
+
   toast('✅ บันทึกการตั้งค่าสำเร็จ! กำลังเชื่อมต่อ...', 'success');
   document.getElementById('sysStatus').textContent = 'กำลังเชื่อมต่อ...';
   api({ action:'init' }).then(res => {
